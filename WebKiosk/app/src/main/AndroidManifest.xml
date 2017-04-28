@@ -23,7 +23,7 @@
 
     <service android:name=".BootService" android:label="Boot service">
         <intent-filter>
-            <action android:name=" com.example.thomas.webkiosk.MyService" />
+            <action android:name=" com.example.thomas.webkiosk.BootService" />
         </intent-filter>
     </service>
 
