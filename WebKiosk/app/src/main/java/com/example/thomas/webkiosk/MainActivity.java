@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        webv.loadUrl("http://www.sednove.com");
+        webv.loadUrl("http://hpibet.com");
     }
 
     @Override
