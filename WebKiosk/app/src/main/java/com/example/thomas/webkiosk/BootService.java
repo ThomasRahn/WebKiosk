@@ -1,16 +1,26 @@
 package com.example.thomas.webkiosk;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.app.Service;
 import android.content.Intent;
+import android.os.IBinder;
 
-public class BootService extends BroadcastReceiver {
+/**
+ * Created by Thomas Rahn on 2017-05-11.
+ */
+
+public class BootService extends Service {
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
-        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            Intent serviceIntent = new Intent(context, BootService.class);
-            context.startService(serviceIntent);
-        }
+    public void onCreate() {
+        super.onCreate();
+        // here you can add whatever you want this service to do
+        Intent dialogIntent = new Intent(this, MainActivity.class);
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(dialogIntent);
     }
+
 }
