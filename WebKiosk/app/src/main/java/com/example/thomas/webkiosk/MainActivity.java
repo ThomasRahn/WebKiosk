@@ -7,20 +7,23 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.app.AlertDialog;
 import android.view.LayoutInflater;
 
 public class MainActivity extends AppCompatActivity {
 
-    EditText result = null;
     final Context context = this;
+    View promptsView;
+    AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,15 +34,26 @@ public class MainActivity extends AppCompatActivity {
 
         WebView webv = (WebView) findViewById(R.id.webview);
 
-        webv.setWebViewClient(new WebViewClient());
+        //webv.setWebViewClient(new WebViewClient());
+        webv.setWebChromeClient(new WebChromeClient(){});
+
         WebSettings webSettings = webv.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
 
         if (Build.VERSION.SDK_INT >= 19) {
             webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         }
+        webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 4.4.2; msm8960; Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version 4.0 Chrome/30.0.0.0 Safari/537.36");
+        //webv.loadUrl("https://hi.sednove.com/pl.sn");
+        webv.loadUrl("https://www.hpibet.com/");
+    }
 
-        webv.loadUrl("http://hpibet.com/");
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
     }
 
     @Override
@@ -55,30 +69,32 @@ public class MainActivity extends AppCompatActivity {
                 .getSystemService(Context.ACTIVITY_SERVICE);
 
         activityManager.moveTaskToFront(getTaskId(), 0);
-
-        showAlert();
     }
+
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
-
-        if (keyCode == KeyEvent.KEYCODE_HOME || keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
-            return super.onKeyDown(keyCode, event);
-
-        } else {
-            return super.onKeyDown(keyCode, event);
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.showAlert) {
+            showAlert();
+            return true;
         }
+
+        return super.onOptionsItemSelected(item);
     }
+
 
 
     public void showAlert(){
 
-
-
         // get prompts.xml view
         LayoutInflater li = LayoutInflater.from(context);
-        View promptsView = li.inflate(R.layout.prompts, null);
+        promptsView = li.inflate(R.layout.prompts, null);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
@@ -91,34 +107,41 @@ public class MainActivity extends AppCompatActivity {
         // set dialog message
         alertDialogBuilder
                 .setCancelable(false)
-                .setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog,int id) {
-                                // get user input and set it to result
-                                // edit text
-                                String password = userInput.getText().toString();
-
-                                if(password.equals("thomas")) {
-                                    getPackageManager().clearPackagePreferredActivities(getPackageName());
-                                    final Intent intent = new Intent();
-                                    intent.setAction(Intent.ACTION_MAIN);
-                                    intent.addCategory(Intent.CATEGORY_HOME);
-                                    startActivity(intent);
-                                }
-                            }
-                        })
+                .setPositiveButton("OK",null)
                 .setNegativeButton("Cancel",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog,int id) {
                                 dialog.cancel();
                             }
                         });
-
         // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog = alertDialogBuilder.create();
 
         // show it
         alertDialog.show();
+
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String password = userInput.getText().toString();
+
+                if(password.equals("thomas")) {
+                    getPackageManager().clearPackagePreferredActivities(getPackageName());
+                    final Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_MAIN);
+                    intent.addCategory(Intent.CATEGORY_HOME);
+                    startActivity(intent);
+                    alertDialog.dismiss();
+                } else {
+                    TextView tv = (TextView) promptsView.findViewById(R.id.errorMessage);
+                    tv.setText("Invalid password");
+                }
+            }
+        });
+
+
 
 
     }
