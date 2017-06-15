@@ -1,51 +1,102 @@
 package com.example.thomas.webkiosk;
 
 import android.app.ActivityManager;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
+import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.AlertDialog;
 import android.view.LayoutInflater;
 
+import org.w3c.dom.Text;
+
+import java.io.FileNotFoundException;
+
 public class MainActivity extends AppCompatActivity {
 
     final Context context = this;
     View promptsView;
     AlertDialog alertDialog;
-
+    WebView webv = null;
+    DownloadManager file;
+    Long q_id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         setContentView(R.layout.activity_main);
 
-        WebView webv = (WebView) findViewById(R.id.webview);
+        webv = (WebView) findViewById(R.id.webview);
 
-        //webv.setWebViewClient(new WebViewClient());
-        webv.setWebChromeClient(new WebChromeClient(){});
+        webv.setWebChromeClient(new WebChromeClient());
+        webv.setWebViewClient(new WebViewClient(){
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
+                if (url.startsWith("rtsp")) {
+                    Uri uri = Uri.parse(url);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    startActivity(intent);
+
+//                    Intent intent = new Intent(MainActivity.this, VideoActivity.class);
+//                    intent.putExtra("key", url); //Optional parameters
+//                    startActivity(intent);
+                    return true;
+                }
+
+                if(url.equals("https://www.hpibet.com/UnsupportedBrowser")){
+                    view.loadUrl("https://www.hpibet.com");
+                } else {
+                    view.loadUrl(url);
+                }
+                return true;
+            }
+        });
+
+        webv.clearCache(true);
+        webv.clearHistory();
+        webv.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+
+        //Set all the settings
         WebSettings webSettings = webv.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+        //webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 4.4.2; msm8960; Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version 4.0 Chrome/30.0.0.0 Safari/537.36");
+        webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 4.4; Nexus 7 Build/KOT24) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.105 Safari/537.36");
 
-        if (Build.VERSION.SDK_INT >= 19) {
-            webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        }
-        webSettings.setUserAgentString("Mozilla/5.0 (Linux; Android 4.4.2; msm8960; Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Version 4.0 Chrome/30.0.0.0 Safari/537.36");
-        //webv.loadUrl("https://hi.sednove.com/pl.sn");
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setAllowFileAccessFromFileURLs(true); //Maybe you don't need this rule
+        webSettings.setAllowUniversalAccessFromFileURLs(true);
+        webSettings.setPluginState(WebSettings.PluginState.ON);
+        webSettings.setAllowContentAccess(true);
+        webSettings.setBlockNetworkLoads(false);
+        webSettings.setSupportMultipleWindows(true);
+        webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+
+
+        //webv.loadUrl("http://www.sednove.com/");
         webv.loadUrl("https://www.hpibet.com/");
     }
 
@@ -60,17 +111,6 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed(){
         Toast.makeText(getApplicationContext(),"You Are Not Allowed to Exit the App", Toast.LENGTH_SHORT).show();
     }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        ActivityManager activityManager = (ActivityManager) getApplicationContext()
-                .getSystemService(Context.ACTIVITY_SERVICE);
-
-        activityManager.moveTaskToFront(getTaskId(), 0);
-    }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -88,7 +128,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
 
+        ActivityManager activityManager = (ActivityManager) getApplicationContext()
+                .getSystemService(Context.ACTIVITY_SERVICE);
+
+        activityManager.moveTaskToFront(getTaskId(), 0);
+    }
 
     public void showAlert(){
 
@@ -140,9 +188,5 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-
-
     }
 }

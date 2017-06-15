@@ -4,5 +4,4 @@
             android:id="@+id/showAlert"
             android:title="Android Home"
             android:orderInCategory="0"/>
-
 </menu>
